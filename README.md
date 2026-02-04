@@ -134,32 +134,9 @@ The repository includes `sample_splunk.json` with example detection rules:
 
 Use this file to test the migration workflow.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 Future Enhancements
-
-- [ ] Export to XSIAM Content Pack format
-- [ ] Bulk coverage analysis reports (CSV/PDF)
-- [ ] Enhanced QRadar AQL to XQL conversion
-- [ ] Direct XSIAM API integration
-- [ ] Migration history tracking
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## 🙏 Acknowledgments
 
 - Palo Alto Networks for XSIAM Analytics documentation
-- Microsoft for inspiration from Azure Sentinel migration tools
 
 ## ⚠️ Disclaimer
 
