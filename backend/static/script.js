@@ -57,8 +57,18 @@ fileInput.addEventListener('change', async (e) => {
 });
 
 async function refreshRules() {
-    currentRules = await api.getRules();
-    renderTable();
+    try {
+        currentRules = await api.getRules();
+        renderTable();
+
+        // Show export and report buttons if we have rules
+        if (currentRules.length > 0) {
+            document.getElementById('exportBtn').style.display = 'inline-block';
+            document.getElementById('reportBtn').style.display = 'inline-block';
+        }
+    } catch (err) {
+        console.error('Failed to fetch rules:', err);
+    }
 }
 
 function renderTable() {
