@@ -1,31 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XSIAM Migration Assistant</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>XSIAM Migration Assistant</h1>
-            <p class="subtitle">Migrate your detection rules from Splunk/QRadar to Cortex XSIAM</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>XSIAM Migration Assistant</h1>
+                    <p class="subtitle">Migrate your detection rules from Splunk/QRadar to Cortex XSIAM</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <div class="dropdown">
+                        <button id="reportBtn" class="upload-btn" style="display: none;" onclick="toggleReportMenu()">
+                            📊 Generate Report ▼
+                        </button>
+                        <div id="reportMenu" class="dropdown-menu" style="display: none;">
+                            <a onclick="downloadReport('csv')">📄 CSV Report</a>
+                            <a onclick="downloadReport('pdf')">📑 PDF Report</a>
+                        </div>
+                    </div>
+                    <button id="exportBtn" class="upload-btn" onclick="exportContentPack()" style="display: none;">
+                        📦 Export Content Pack
+                    </button>
+                </div>
+            </div>
         </header>
 
         <section class="upload-section">
             <h2 style="margin-bottom: 1rem;">Start Migration</h2>
-            <p style="color: var(--text-secondary);">Upload your exported rules file (JSON for Splunk, XML for QRadar)</p>
-            
+            <p style="color: var(--text-secondary);">Upload your exported rules file (JSON for Splunk, XML for QRadar)
+            </p>
+
             <div style="margin-top: 1.5rem;">
-                <select id="platformSelect" style="padding: 0.75rem; border-radius: 0.5rem; background: var(--bg-primary); color: white; border: 1px solid var(--border); margin-right: 1rem;">
+                <select id="platformSelect"
+                    style="padding: 0.75rem; border-radius: 0.5rem; background: var(--bg-primary); color: white; border: 1px solid var(--border); margin-right: 1rem;">
                     <option value="splunk">Splunk (JSON)</option>
                     <option value="qradar">QRadar (XML)</option>
                 </select>
                 <input type="file" id="fileInput" style="display: none;">
                 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Select File</button>
             </div>
-            
+
             <div id="uploadStatus" style="margin-top: 1rem; font-size: 0.875rem;"></div>
         </section>
 
@@ -52,18 +74,20 @@
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal()">&times;</button>
             <h2 id="modalTitle">Edit Rule</h2>
-            
+
             <div class="editor-split">
                 <div>
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Source Query</label>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Source
+                        Query</label>
                     <textarea id="sourceQuery" readonly></textarea>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">XQL Query</label>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">XQL
+                        Query</label>
                     <textarea id="xqlQuery" placeholder="// Target XQL query will appear here..."></textarea>
                 </div>
             </div>
-            
+
             <div style="text-align: right;">
                 <button class="upload-btn" onclick="saveRule()">Save Changes</button>
             </div>
@@ -72,4 +96,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

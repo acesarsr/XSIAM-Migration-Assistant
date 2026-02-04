@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from typing import List
 import uvicorn
 import json
@@ -8,6 +9,8 @@ import xml.etree.ElementTree as ET
 from models import DetectionRule, MigrationSummary
 from converter.spl_to_xql import convert_spl_to_xql
 from coverage_analyzer import load_analytics, analyze_rule_coverage
+from exporter.content_pack_generator import create_content_pack
+from reports.report_generator import generate_csv_report, generate_pdf_report
 
 app = FastAPI(title="XSIAM Migration Assistant")
 
@@ -54,6 +57,74 @@ async def update_rule(rule_id: str, updated_rule: DetectionRule):
             rules_db[i] = updated_rule
             return updated_rule
     raise HTTPException(status_code=404, detail="Rule not found")
+
+@app.post("/api/export/content-pack")
+def export_content_pack():
+    """Export all rules as XSIAM content pack ZIP"""
+    if not rules_db:
+        raise HTTPException(status_code=400, detail="No rules to export")
+    
+    # Convert Pydantic models to dicts
+    rules_data = [r.dict() for r in rules_db]
+    
+    # Generate content pack
+    zip_buffer = create_content_pack(rules_data, pack_name="MigratedRules")
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=MigratedRules_ContentPack.zip"}
+    )
+
+@app.get("/api/reports/coverage/csv")
+def get_coverage_report_csv():
+    """Generate CSV coverage report for all rules"""
+    if not rules_db:
+        raise HTTPException(status_code=400, detail="No rules to analyze")
+    
+    # Generate coverage for all rules
+    coverage_results = []
+    for rule in rules_db:
+        coverage = analyze_rule_coverage(
+            {'name': rule.name, 'description': rule.description or ''},
+            xsiam_analytics
+        )
+        coverage_results.append(coverage)
+    
+    # Generate CSV
+    rules_data = [r.dict() for r in rules_db]
+    csv_buffer = generate_csv_report(rules_data, coverage_results)
+    
+    return StreamingResponse(
+        csv_buffer,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=Coverage_Report.csv"}
+    )
+
+@app.get("/api/reports/coverage/pdf")
+def get_coverage_report_pdf():
+    """Generate PDF coverage report for all rules"""
+    if not rules_db:
+        raise HTTPException(status_code=400, detail="No rules to analyze")
+    
+    # Generate coverage for all rules
+    coverage_results = []
+    for rule in rules_db:
+        coverage = analyze_rule_coverage(
+            {'name': rule.name, 'description': rule.description or ''},
+            xsiam_analytics
+        )
+        coverage_results.append(coverage)
+    
+    # Generate PDF
+    rules_data = [r.dict() for r in rules_db]
+    pdf_buffer = generate_pdf_report(rules_data, coverage_results)
+    
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=Coverage_Report.pdf"}
+    )
 
 @app.post("/api/upload/{platform}")
 async def upload_file(platform: str, file: UploadFile = File(...)):

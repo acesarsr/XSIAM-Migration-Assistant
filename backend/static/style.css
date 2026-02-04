@@ -210,3 +210,42 @@ textarea {
     font-size: 1.5rem;
     cursor: pointer;
 }
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    background-color: var(--bg-secondary);
+    min-width: 180px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    z-index: 1000;
+}
+
+.dropdown-menu a {
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--accent);
+}
+
+.dropdown-menu a:first-child {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.dropdown-menu a:last-child {
+    border-radius: 0 0 0.5rem 0.5rem;
+}

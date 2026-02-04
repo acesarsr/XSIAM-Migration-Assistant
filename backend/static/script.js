@@ -16,6 +16,11 @@ const api = {
     getCoverage: async (ruleId) => {
         const res = await fetch(`/api/coverage/${ruleId}`);
         return res.json();
+    },
+    exportContentPack: async () => {
+        const res = await fetch('/api/export/content-pack', { method: 'POST' });
+        if (!res.ok) throw new Error('Export failed');
+        return res.blob();
     }
 };
 
@@ -39,9 +44,11 @@ fileInput.addEventListener('change', async (e) => {
     uploadStatus.style.color = 'var(--text-secondary)';
 
     try {
-        await api.upload(platform, file);
-        uploadStatus.textContent = 'Upload successful!';
+        const result = await api.upload(platform, file);
+        uploadStatus.textContent = `Upload successful! Processed ${result.count} rules.`;
         uploadStatus.style.color = 'var(--success)';
+        document.getElementById('exportBtn').style.display = 'inline-block';
+        document.getElementById('reportBtn').style.display = 'inline-block';
         refreshRules();
     } catch (err) {
         uploadStatus.textContent = `Error: ${err.message}`;
@@ -147,6 +154,55 @@ window.checkCoverage = async (idx) => {
         alert('Error checking coverage: ' + err.message);
     }
 };
+
+window.exportContentPack = async () => {
+    try {
+        const blob = await api.exportContentPack();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'MigratedRules_ContentPack.zip';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (err) {
+        alert('Error exporting content pack: ' + err.message);
+    }
+};
+
+window.toggleReportMenu = () => {
+    const menu = document.getElementById('reportMenu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+};
+
+window.downloadReport = async (format) => {
+    document.getElementById('reportMenu').style.display = 'none';
+
+    try {
+        const res = await fetch(`/api/reports/coverage/${format}`);
+        if (!res.ok) throw new Error('Report generation failed');
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Coverage_Report.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (err) {
+        alert('Error generating report: ' + err.message);
+    }
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown')) {
+        document.getElementById('reportMenu').style.display = 'none';
+    }
+});
 
 // Initial Load
 refreshRules();
