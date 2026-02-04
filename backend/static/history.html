@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration History - XSIAM Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Migration History</h1>
+                    <p class="subtitle">View and manage past migration sessions</p>
+                </div>
+                <a href="/"
+                    style="background: var(--accent); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none;">←
+                    Back to Migrations</a>
+            </div>
+        </header>
+
+        <!-- Statistics -->
+        <section class="upload-section" style="margin-bottom: 2rem;">
+            <h2 style="margin-bottom: 1rem;">Overall Statistics</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div
+                    style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--accent);" id="totalMigrations">0</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.5rem;">Total Migrations</div>
+                </div>
+                <div
+                    style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--success);" id="totalRules">0</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.5rem;">Total Rules Processed</div>
+                </div>
+                <div
+                    style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--warning);" id="totalSuccessful">0</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.5rem;">Successful Conversions</div>
+                </div>
+                <div
+                    style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--text-primary);" id="avgSuccessRate">0%
+                    </div>
+                    <div style="color: var(--text-secondary); margin-top: 0.5rem;">Avg. Success Rate</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Migration History Table -->
+        <main class="dashboard">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Platform</th>
+                        <th>File Name</th>
+                        <th>Total Rules</th>
+                        <th>Successful</th>
+                        <th>Failed</th>
+                        <th>Success Rate</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            Loading history...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <button class="close-btn" onclick="closeDetailsModal()">×</button>
+            <h2 id="modalTitle">Migration Details</h2>
+
+            <div id="migrationDetails" style="margin-top: 1.5rem;">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="history.js"></script>
+</body>
+
+</html>

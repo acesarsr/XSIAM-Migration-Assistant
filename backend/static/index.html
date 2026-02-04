@@ -16,7 +16,15 @@
                     <h1>XSIAM Migration Assistant</h1>
                     <p class="subtitle">Migrate your detection rules from Splunk/QRadar to Cortex XSIAM</p>
                 </div>
-                <div style="display: flex; gap: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button onclick="openSettingsModal()"
+                        style="background: var(--bg-secondary); color: var(--text-primary); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                        ⚙️ Settings
+                    </button>
+                    <a href="/history.html"
+                        style="background: var(--bg-secondary); color: var(--text-primary); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                        📜 History
+                    </a>
                     <div class="dropdown">
                         <button id="reportBtn" class="upload-btn" style="display: none;" onclick="toggleReportMenu()">
                             📊 Generate Report ▼
@@ -91,6 +99,49 @@
             <div style="text-align: right;">
                 <button class="upload-btn" onclick="saveRule()">Save Changes</button>
             </div>
+        </div>
+    </div>
+
+    <!-- XSIAM Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            <h2>XSIAM API Configuration</h2>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Configure your XSIAM API credentials to enable direct rule uploads to your tenant.
+            </p>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">FQDN (Fully
+                    Qualified Domain Name)</label>
+                <input id="xsiamFQDN" type="text" placeholder="example.xdr.us.paloaltonetworks.com"
+                    style="width: 100%; padding: 0.75rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary);">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">API Key</label>
+                <input id="xsiamAPIKey" type="password" placeholder="Your API Key"
+                    style="width: 100%; padding: 0.75rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary);">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">API Key ID</label>
+                <input id="xsiamAPIKeyID" type="text" placeholder="Your API Key ID"
+                    style="width: 100%; padding: 0.75rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary);">
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button onclick="testXSIAMConnection()"
+                    style="background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer;">
+                    Test Connection
+                </button>
+                <button onclick="saveXSIAMConfig()" class="upload-btn">
+                    Save Configuration
+                </button>
+            </div>
+
+            <div id="settingsStatus" style="margin-top: 1rem; font-size: 0.875rem;"></div>
         </div>
     </div>
 

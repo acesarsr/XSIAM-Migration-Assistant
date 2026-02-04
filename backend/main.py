@@ -11,6 +11,10 @@ from converter.spl_to_xql import convert_spl_to_xql
 from coverage_analyzer import load_analytics, analyze_rule_coverage
 from exporter.content_pack_generator import create_content_pack
 from reports.report_generator import generate_csv_report, generate_pdf_report
+import database
+from api_client import config as xsiam_config
+from api_client.xsiam_client import XSIAMClient
+from pydantic import BaseModel
 
 app = FastAPI(title="XSIAM Migration Assistant")
 
@@ -126,6 +130,102 @@ def get_coverage_report_pdf():
         headers={"Content-Disposition": "attachment; filename=Coverage_Report.pdf"}
     )
 
+@app.get("/api/history")
+def get_migration_history():
+    """Get list of all past migrations"""
+    return database.get_all_migrations()
+
+@app.get("/api/history/{migration_id}")
+def get_migration_detail(migration_id: int):
+    """Get detailed information about a specific migration"""
+    migration = database.get_migration_details(migration_id)
+    if not migration:
+        raise HTTPException(status_code=404, detail="Migration not found")
+    return migration
+
+@app.delete("/api/history/{migration_id}")
+def delete_migration_record(migration_id: int):
+    """Delete a migration from history"""
+    success = database.delete_migration(migration_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Migration not found")
+    return {"message": "Migration deleted successfully"}
+
+@app.get("/api/history/stats")
+def get_history_stats():
+    """Get overall migration statistics"""
+    return database.get_migration_stats()
+
+# XSIAM API Configuration Models
+class XSIAMConfig(BaseModel):
+    fqdn: str
+    api_key: str
+    api_key_id: str
+
+@app.post("/api/config/xsiam")
+def save_xsiam_config(config: XSIAMConfig):
+    """Save XSIAM API configuration"""
+    xsiam_config.save_config(config.fqdn, config.api_key, config.api_key_id)
+    return {"message": "Configuration saved successfully"}
+
+@app.get("/api/config/xsiam/status")
+def get_xsiam_config_status():
+    """Check if XSIAM is configured"""
+    return {"configured": xsiam_config.is_configured()}
+
+@app.post("/api/config/xsiam/test")
+def test_xsiam_connection():
+    """Test XSIAM API connection"""
+    config = xsiam_config.load_config()
+    if not config:
+        raise HTTPException(status_code=400, detail="XSIAM not configured")
+    
+    client = XSIAMClient(**config)
+    result = client.test_connection()
+    
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["message"])
+    
+    return result
+
+@app.post("/api/upload-to-xsiam/{rule_id}")
+def upload_rule_to_xsiam(rule_id: str):
+    """Upload a specific rule to XSIAM"""
+    config = xsiam_config.load_config()
+    if not config:
+        raise HTTPException(status_code=400, detail="XSIAM not configured. Please configure API credentials first.")
+    
+    # Find the rule
+    rule = next((r for r in rules_db if r.id == rule_id), None)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    
+    # Upload to XSIAM
+    client = XSIAMClient(**config)
+    result = client.upload_correlation_rule(rule.dict())
+    
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["message"])
+    
+    return result
+
+@app.post("/api/upload-all-to-xsiam")
+def upload_all_rules_to_xsiam():
+    """Upload all rules to XSIAM"""
+    config = xsiam_config.load_config()
+    if not config:
+        raise HTTPException(status_code=400, detail="XSIAM not configured")
+    
+    if not rules_db:
+        raise HTTPException(status_code=400, detail="No rules to upload")
+    
+    # Upload all rules
+    client = XSIAMClient(**config)
+    rules_data = [r.dict() for r in rules_db]
+    results = client.bulk_upload_rules(rules_data)
+    
+    return results
+
 @app.post("/api/upload/{platform}")
 async def upload_file(platform: str, file: UploadFile = File(...)):
     if platform not in ["splunk", "qradar"]:
@@ -173,6 +273,27 @@ async def upload_file(platform: str, file: UploadFile = File(...)):
 
     global rules_db
     rules_db = rules
+    
+    # Save to migration history
+    if rules:
+        # Generate coverage for history tracking
+        coverage_results = []
+        for rule in rules:
+            coverage = analyze_rule_coverage(
+                {'name': rule.name, 'description': rule.description or ''},
+                xsiam_analytics
+            )
+            coverage_results.append(coverage)
+        
+        # Save to database
+        rules_data = [r.dict() for r in rules]
+        migration_id = database.save_migration(
+            source_platform=platform,
+            file_name=file.filename,
+            rules_data=rules_data,
+            coverage_data=coverage_results
+        )
+    
     return {"message": f"Processed {len(rules)} rules", "count": len(rules)}
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

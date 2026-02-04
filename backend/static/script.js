@@ -21,6 +21,23 @@ const api = {
         const res = await fetch('/api/export/content-pack', { method: 'POST' });
         if (!res.ok) throw new Error('Export failed');
         return res.blob();
+    },
+    // XSIAM API functions
+    saveXSIAMConfig: async (config) => {
+        const res = await fetch('/api/config/xsiam', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        return res.json();
+    },
+    testXSIAMConnection: async () => {
+        const res = await fetch('/api/config/xsiam/test', { method: 'POST' });
+        return res.json();
+    },
+    uploadToXSIAM: async (ruleId) => {
+        const res = await fetch(`/api/upload-to-xsiam/${ruleId}`, { method: 'POST' });
+        return res.json();
     }
 };
 
@@ -216,3 +233,40 @@ document.addEventListener('click', (e) => {
 
 // Initial Load
 refreshRules();
+// Settings Modal JS
+window.openSettingsModal = () => {
+    document.getElementById("settingsModal").style.display = "flex";
+};
+
+window.closeSettingsModal = () => {
+    document.getElementById("settingsModal").style.display = "none";
+};
+
+window.saveXSIAMConfig = async () => {
+    const fqdn = document.getElementById("xsiamFQDN").value.trim();
+    const apiKey = document.getElementById("xsiamAPIKey").value.trim();
+    const apiKeyID = document.getElementById("xsiamAPIKeyID").value.trim();
+    
+    if (!fqdn || !apiKey || !apiKeyID) {
+        alert("Please fill in all fields");
+        return;
+    }
+    
+    try {
+        await api.saveXSIAMConfig({ fqdn, api_key: apiKey, api_key_id: apiKeyID });
+        document.getElementById("settingsStatus").innerHTML = "<span style=\"color: var(--success)\">✅ Configuration saved successfully!</span>";
+    } catch (err) {
+        document.getElementById("settingsStatus").innerHTML = "<span style=\"color: var(--danger)\">❌ Failed to save configuration</span>";
+    }
+};
+
+window.testXSIAMConnection = async () => {
+    document.getElementById("settingsStatus").textContent = "Testing connection...";
+    
+    try {
+        const result = await api.testXSIAMConnection();
+        document.getElementById("settingsStatus").innerHTML = "<span style=\"color: var(--success)\">✅ " + result.message + "</span>";
+    } catch (err) {
+        document.getElementById("settingsStatus").innerHTML = "<span style=\"color: var(--danger)\">❌ Connection failed. Check your credentials.</span>";
+    }
+};
