@@ -1,0 +1,12 @@
+[
+    {
+        "title": "Suspicious Login Attempt",
+        "description": "Detects multiple failed logins from the same IP.",
+        "search": "index=security sourcetype=access_combined | stats count by src_ip | where count > 10"
+    },
+    {
+        "title": "Malware Beaconing",
+        "description": "Detects potential C2 communication.",
+        "search": "index=firewall action=allowed | stats count by dest_ip | where count > 1000"
+    }
+]
